@@ -7,7 +7,7 @@ import (
 )
 
 // required environmemts to create
-var environments = []string{"dev", "statging", "prod"}
+var environments = []string{"dev", "staging", "prod"}
 
 // runtime info from the runtime package
 type RuntimeInfo struct {

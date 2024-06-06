@@ -1,5 +1,5 @@
 name: go-app-push-to-ECR
-run-name: go-app-push-to-ECR-by-{{ github.actor }}
+run-name: go-app-push-to-ECR-by-${{ github.actor }}
 on:
   push:
     branches:
