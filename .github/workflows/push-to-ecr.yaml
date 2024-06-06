@@ -1,0 +1,17 @@
+name: go-app-push-to-ECR
+run-name: go-app-push-to-ECR-by-{{ github.actor }}
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  build-my-go-app:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v5
+      with:
+        go-version: '^1.21.6'
+    - run: go mod download
+    - run: go build -o ./get-provisioning-info
+    - run: ./get-provisioning-info
