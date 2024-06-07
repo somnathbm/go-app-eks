@@ -6,6 +6,7 @@ on:
       - "main"
 jobs:
   build-my-go-app:
+    name: Build-Test-Source
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -15,3 +16,37 @@ jobs:
     - run: go mod download
     - run: go build -o ./get-provisioning-info
     - run: ./get-provisioning-info
+  dockerize-and-push-to-ECR:
+    name: Dockerize-and-push-to-ECR
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: $${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: $${{ secrets.AWS_REGION }}
+      ECR_REPO: go_ecr_repo
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup AWS credentials
+      uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+      with:
+        aws-access-key-id: $AWS_ACCESS_KEY_ID
+        aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+        aws-region: $AWS_REGION
+    
+    - name: Login to AWS ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+    - name: Build, tag and push image to ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Dockerize the app and push it to ECR
+        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_OUTPUT
